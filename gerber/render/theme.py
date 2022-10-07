@@ -57,6 +57,8 @@ class Theme(object):
         self.bottomsilk = kwargs.get('bottomsilk', RenderSettings(COLORS['white'], mirror=True))
         self.topmask = kwargs.get('topmask', RenderSettings(COLORS['green soldermask'], alpha=0.85, invert=True))
         self.bottommask = kwargs.get('bottommask', RenderSettings(COLORS['green soldermask'], alpha=0.85, invert=True, mirror=True))
+        self.toppaste = kwargs.get('toppaste', RenderSettings((0.5, 0.5, 0.5), alpha=0.85))
+        self.bottompaste = kwargs.get('bottompaste', RenderSettings((0.5, 0.5, 0.5), alpha=0.85, mirror=True))
         self.top = kwargs.get('top', RenderSettings(COLORS['hasl copper']))
         self.bottom = kwargs.get('bottom', RenderSettings(COLORS['hasl copper'], mirror=True))
         self.drill = kwargs.get('drill', RenderSettings(COLORS['black']))
