@@ -61,6 +61,18 @@ class GerberCairoContext(GerberContext):
         return (self.scale_point(self.size_in_inch)
                 if self.size_in_inch is not None else (0.0, 0.0))
 
+    @property
+    def origin_in_mm(self):
+        x, y = (self.scale_point(self.origin_in_inch)
+                if self.origin_in_inch is not None else (0.0, 0.0))
+        return (x / 25.4, y / 25.4)
+
+    @property
+    def size_in_mm(self):
+        x, y = (self.scale_point(self.size_in_inch)
+                if self.size_in_inch is not None else (0.0, 0.0))
+        return (x / 25.4, y / 25.4)
+
     def set_bounds(self, bounds, new_surface=False):
         origin_in_inch = (bounds[0][0], bounds[1][0])
         size_in_inch = (abs(bounds[0][1] - bounds[0][0]),
