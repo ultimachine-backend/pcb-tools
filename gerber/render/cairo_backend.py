@@ -20,7 +20,7 @@ try:
     import cairo
 except ImportError:
     import cairocffi as cairo
-
+from collections import Counter
 from operator import mul
 import tempfile
 import copy
@@ -53,31 +53,35 @@ class GerberCairoContext(GerberContext):
 
     @property
     def origin_in_pixels(self):
-        return (self.scale_point(self.origin_in_inch)
+        return (self.scale_global(self.origin_in_inch)
                 if self.origin_in_inch is not None else (0.0, 0.0))
 
     @property
     def size_in_pixels(self):
-        return (self.scale_point(self.size_in_inch)
+        return (self.scale_global(self.size_in_inch)
                 if self.size_in_inch is not None else (0.0, 0.0))
 
     @property
     def origin_in_mm(self):
-        x, y = (self.scale_point(self.origin_in_inch)
+        x, y = (self.origin_in_inch
                 if self.origin_in_inch is not None else (0.0, 0.0))
-        return (x / 25.4, y / 25.4)
+        if self.units == 'inch':
+            x, y = (x * 25.4, y * 25.4)
+        return (x, y)
 
     @property
     def size_in_mm(self):
-        x, y = (self.scale_point(self.size_in_inch)
+        x, y = (self.size_in_inch
                 if self.size_in_inch is not None else (0.0, 0.0))
-        return (x / 25.4, y / 25.4)
+        if self.units == 'inch':
+            x, y = (x * 25.4, y * 25.4)
+        return (x, y)
 
     def set_bounds(self, bounds, new_surface=False):
         origin_in_inch = (bounds[0][0], bounds[1][0])
         size_in_inch = (abs(bounds[0][1] - bounds[0][0]),
                         abs(bounds[1][1] - bounds[1][0]))
-        size_in_pixels = self.scale_point(size_in_inch)
+        size_in_pixels = self.scale_global(size_in_inch)
         self.origin_in_inch = origin_in_inch if self.origin_in_inch is None else self.origin_in_inch
         self.size_in_inch = size_in_inch if self.size_in_inch is None else self.size_in_inch
         self._xform_matrix = cairo.Matrix(xx=1.0, yy=-1.0,
@@ -115,12 +119,18 @@ class GerberCairoContext(GerberContext):
                       verbose=False, max_width=800, max_height=600):
         """ Render a set of layers
         """
+        # Select units
+        self.units = 'inch'
+
         # Calculate scale parameter
         x_range = [10000, -10000]
         y_range = [10000, -10000]
         for layer in layers:
+            self.layer_units = layer.cam_source.units
             bounds = layer.bounds
             if bounds is not None:
+                bounds = tuple([self.unit_conversion(point) for point in bounds])
+                layer_x, layer_y = bounds
                 layer_x, layer_y = bounds
                 x_range[0] = min(x_range[0], layer_x[0])
                 x_range[1] = max(x_range[1], layer_x[1])
@@ -130,16 +140,18 @@ class GerberCairoContext(GerberContext):
         height = y_range[1] - y_range[0]
 
         scale = math.floor(min(float(max_width)/width, float(max_height)/height))
-        self.scale = (scale, scale)
+        self.main_scale = (scale, scale)
 
         self.clear()
 
         # Render layers
         bgsettings = theme['background']
         for layer in layers:
+            self.layer_units = layer.cam_source.units
+            self.scale = self.unit_conversion((self.main_scale[0], self.main_scale[1]))
             settings = theme.get(layer.layer_class, RenderSettings())
             self.render_layer(layer, settings=settings, bgsettings=bgsettings,
-                              verbose=verbose)
+                            verbose=verbose)
         self.dump(filename, verbose)
 
     def dump(self, filename=None, verbose=False):
@@ -543,7 +555,7 @@ class GerberCairoContext(GerberContext):
         self.ctx.scale(1, -1)
 
     def new_render_layer(self, color=None, mirror=False):
-        size_in_pixels = self.scale_point(self.size_in_inch)
+        size_in_pixels = self.scale_global(self.size_in_inch)
         matrix = copy.copy(self._xform_matrix)
         layer = cairo.SVGSurface(None, size_in_pixels[0], size_in_pixels[1])
         ctx = cairo.Context(layer)
@@ -625,4 +637,16 @@ class GerberCairoContext(GerberContext):
         return Clip(primitive)
 
     def scale_point(self, point):
+        #point = self.unit_conversion(point)
         return tuple([coord * scale for coord, scale in zip(point, self.scale)])
+
+    def scale_global(self, point):
+        #point = self.unit_conversion(point)
+        return tuple([coord * scale for coord, scale in zip(point, self.main_scale)])
+    
+    def unit_conversion(self, point):
+        if self.layer_units == self.units:
+            return point
+        if self.layer_units == 'metric':
+            return tuple([round(coord / 25.4, 6) for coord in point])
+        return tuple([round(coord * 25.4, 6) for coord in point])
