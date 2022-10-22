@@ -77,10 +77,14 @@ class GerberCairoContext(GerberContext):
             x, y = (x * 25.4, y * 25.4)
         return (x, y)
 
-    def set_bounds(self, bounds, new_surface=False):
+    def set_bounds(self, bounds, new_surface=False, scope='global'):
         origin_in_inch = (bounds[0][0], bounds[1][0])
         size_in_inch = (abs(bounds[0][1] - bounds[0][0]),
                         abs(bounds[1][1] - bounds[1][0]))
+        if scope == 'layer':
+            origin_in_inch = self.unit_conversion(origin_in_inch)
+            size_in_inch = self.unit_conversion(size_in_inch)
+        size_in_pixels = self.scale_global(size_in_inch)
         size_in_pixels = self.scale_global(size_in_inch)
         self.origin_in_inch = origin_in_inch if self.origin_in_inch is None else self.origin_in_inch
         self.size_in_inch = size_in_inch if self.size_in_inch is None else self.size_in_inch
@@ -106,7 +110,7 @@ class GerberCairoContext(GerberContext):
             if bounds is not None:
                 self.set_bounds(bounds)
             else:
-                self.set_bounds(layer.bounds)
+                self.set_bounds(layer.bounds, scope='layer')
             self.paint_background(bgsettings)
         if verbose:
             print('[Render]: Rendering {} Layer.'.format(layer.layer_class))
@@ -130,7 +134,6 @@ class GerberCairoContext(GerberContext):
             bounds = layer.bounds
             if bounds is not None:
                 bounds = tuple([self.unit_conversion(point) for point in bounds])
-                layer_x, layer_y = bounds
                 layer_x, layer_y = bounds
                 x_range[0] = min(x_range[0], layer_x[0])
                 x_range[1] = max(x_range[1], layer_x[1])

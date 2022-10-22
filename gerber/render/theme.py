@@ -62,6 +62,7 @@ class Theme(object):
         self.top = kwargs.get('top', RenderSettings(COLORS['enig copper']))
         self.bottom = kwargs.get('bottom', RenderSettings(COLORS['enig copper'], mirror=True))
         self.drill = kwargs.get('drill', RenderSettings(COLORS['black']))
+        self.outline = kwargs.get('outline', RenderSettings(COLORS['black']))
         self.ipc_netlist = kwargs.get('ipc_netlist', RenderSettings(COLORS['red']))
         self._internal = kwargs.get('internal', [RenderSettings(x) for x in SPECTRUM])
         self._internal_gen = None
