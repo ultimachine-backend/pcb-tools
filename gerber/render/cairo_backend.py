@@ -142,7 +142,16 @@ class GerberCairoContext(GerberContext):
         width = x_range[1] - x_range[0]
         height = y_range[1] - y_range[0]
 
-        scale = math.floor(min(float(max_width)/width, float(max_height)/height))
+        # this could help with single pixel axis? may be pointless
+        if not width:
+            scale_width = max_width
+        else:
+            scale_width = float(max_width)/width
+        if not height:
+            scale_height = max_height
+        else:
+            scale_height = float(max_height)/height
+        scale = math.floor(min(scale_width, scale_height))
         self.main_scale = (scale, scale)
 
         self.clear()
