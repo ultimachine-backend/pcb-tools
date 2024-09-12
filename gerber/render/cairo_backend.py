@@ -162,8 +162,12 @@ class GerberCairoContext(GerberContext):
             self.layer_units = layer.cam_source.units
             self.scale = self.unit_conversion((self.main_scale[0], self.main_scale[1]))
             settings = theme.get(layer.layer_class, RenderSettings())
-            self.render_layer(layer, settings=settings, bgsettings=bgsettings,
-                            verbose=verbose)
+            try:
+                self.render_layer(layer, settings=settings, bgsettings=bgsettings,
+                                verbose=verbose)
+            except:
+                if request:
+                    request.session.flash(f'Error rendering file {layer.filename}', 'danger')
         self.dump(filename, verbose)
 
     def dump(self, filename=None, verbose=False):
