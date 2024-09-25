@@ -120,7 +120,7 @@ class GerberCairoContext(GerberContext):
             self.dump(filename, verbose)
 
     def render_layers(self, layers, filename, theme=THEMES['default'],
-                      verbose=False, max_width=800, max_height=600):
+                      verbose=False, max_width=800, max_height=600, request=None):
         """ Render a set of layers
         """
         # Select units
