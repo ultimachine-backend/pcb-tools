@@ -350,8 +350,15 @@ class ADParamStmt(ParamStmt):
         if isinstance(modifiers, tuple):
             self.modifiers = modifiers
         elif modifiers:
-            self.modifiers = [tuple([float(x) for x in m.split("X") if len(x)])
-                              for m in modifiers.split(",") if len(m)]
+            parsed = []
+            for m in modifiers.split(","):
+                if not len(m):
+                    continue
+                try:
+                    parsed.append(tuple([float(x) for x in m.split("X") if len(x)]))
+                except ValueError:
+                    parsed.append(tuple())
+            self.modifiers = parsed if parsed else [tuple()]
         else:
             self.modifiers = [tuple()]
 

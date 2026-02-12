@@ -188,10 +188,10 @@ class GerberParser(object):
     FS = r"(?P<param>FS)(?P<zero>(L|T|D))?(?P<notation>(A|I))[NG0-9]*X(?P<x>[0-7][0-7])Y(?P<y>[0-7][0-7])[DM0-9]*"
     MO = r"(?P<param>MO)(?P<mo>(MM|IN))"
     LP = r"(?P<param>LP)(?P<lp>(D|C))"
-    AD_CIRCLE = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>C)[,]?(?P<modifiers>[^,%]*)"
-    AD_RECT = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>R)[,](?P<modifiers>[^,%]*)"
-    AD_OBROUND = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>O)[,](?P<modifiers>[^,%]*)"
-    AD_POLY = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>P)[,](?P<modifiers>[^,%]*)"
+    AD_CIRCLE = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>C)(?![a-zA-Z_$\.0-9])[,]?(?P<modifiers>[^,%]*)"
+    AD_RECT = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>R)(?![a-zA-Z_$\.0-9])[,](?P<modifiers>[^,%]*)"
+    AD_OBROUND = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>O)(?![a-zA-Z_$\.0-9])[,](?P<modifiers>[^,%]*)"
+    AD_POLY = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>P)(?![a-zA-Z_$\.0-9])[,](?P<modifiers>[^,%]*)"
     AD_MACRO = r"(?P<param>AD)D(?P<d>\d+)(?P<shape>{name})[,]?(?P<modifiers>[^,%]*)".format(name=NAME)
     AM = r"(?P<param>AM)(?P<name>{name})\*(?P<macro>[^%]*)".format(name=NAME)
     # Include File
